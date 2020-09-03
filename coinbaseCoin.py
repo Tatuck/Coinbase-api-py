@@ -10,7 +10,7 @@ from time import time, sleep
 
 
 #CAMBIABLE:
-client = Client('<TU-API-ID>', '<TU-API-SECRET>')
+client = Client('<API-ID>', '<API-SECRET>')
 tiempoActualizacion = 5
 
 #PREDEFINIDOS:
@@ -104,35 +104,85 @@ def realTimeEscritura(walletID):
 #CREAR WALLET
 def CrearWallet():
     PonerTexto()
-    walletIDElegido = input("Cual es el ID de tu wallet: ")
-    try:
-        walletID = walletIDElegido
-        global valorMoneda
-        valorMoneda = client.get_account(walletID)
+    listaIDs = client.get_accounts()
+    cantidadIDs = len(listaIDs.data)
+
+    print("  ______________________________________________________________________________")
+    print(" /_____________________________________________________________________________/")
+    print("/_____________________________________________________________________________/")
+    while cantidadIDs >= 0:
+        
+        walletIDs = listaIDs[cantidadIDs-1]
+        print("|| ["+str(cantidadIDs)+"] Nombre Wallet: '"+walletIDs.name+ "', ID Wallet: '"+ walletIDs.id+"'")
+        
+        
+        if cantidadIDs == 0:
+            print("||-----------------------------------------------------------------------------") 
+            print("|| Dale a la tecla: [c] para SELECCIONAR UN ID PERSONALIZADO")
+            print("||_____________________________________________________________________________")
+            print("| SI NO VES LA WALLET QUE BUSCABAS ASEGURATE DE QUE LA API TENGA ACCESO A ELLA!")
+            print("\______________________________________________________________________________")
+        else:
+            print("||-----------------------------------------------------------------------------")
+        cantidadIDs = cantidadIDs - 1
+    walletIDElegido = input("Selecciona tu wallet: ")
+    if walletIDElegido == "c":
+        walletIDElegido = input("Cual es el ID: ")
         try:
-            os.mkdir("wallets")
-        except:
+            walletID = walletIDElegido
+            global valorMoneda
+            valorMoneda = client.get_account(walletID)
+            try:
+                os.mkdir("wallets")
+            except:
+                pass
+            wallet = open("wallets/"+valorMoneda.name+".wallet","w") 
+            wallet.write(walletIDElegido)
+            wallet.close()
+            print("Creada con el nombre: "+ valorMoneda.name+ "!! :D")
+            print()
+        except(KeyboardInterrupt):
             pass
-        wallet = open("wallets/"+valorMoneda.name+".wallet","w") 
-        wallet.write(walletIDElegido)
-        wallet.close()
-        print("Creada con el nombre: "+ valorMoneda.name+ "!! :D")
-        print()
-    except(KeyboardInterrupt):
-        pass
-    except:
-        print("HUBO UN ERROR!!! PODRIA SER QUE NO EXISTE ESE ID DE TU WALLET, O TIENES MAL PUESTO TU CLIENT-ID o CLIENT-SECRET")
-    print("Quieres seguir con el programa?")
-    print("[0] Si :D")
-    print("[1] Obtener IDs")
-    print("[2] No, salir")
-    eleccion = input("Que eliges? ")
-    if eleccion == "0":
-        ElegirWallet()
-    elif eleccion == "1":
-        ObtenerID()
+        except:
+            print("HUBO UN ERROR!!! PODRIA SER QUE NO EXISTE ESE ID DE TU WALLET, O TIENES MAL PUESTO TU CLIENT-ID o CLIENT-SECRET")
+        print("Quieres seguir con el programa?")
+        print("[0] Si :D")
+        print("[1] Obtener IDs")
+        print("[2] No, salir")
+        eleccion = input("Que eliges? ")
+        if eleccion == "0":
+            ElegirWallet()
+        elif eleccion == "1":
+            ObtenerID()
+        else:
+            exit
     else:
-        exit
+        wallet = listaIDs[int(walletIDElegido)-1]  
+        walletID = wallet.id
+        walletNombre = wallet.name
+
+        try: 
+            try:
+                os.mkdir("wallets")
+            except:
+                pass
+            wallet = open("wallets/"+walletNombre+".wallet","w") 
+            wallet.write(walletID)
+            wallet.close()
+            print("Creada con el nombre: '"+ walletNombre+ "'!! y el ID: '"+walletID+"' :D")
+            print()
+        except(KeyboardInterrupt):
+            pass
+        print("Quieres seguir con el programa?")
+        print("[0] Si :D")
+        print("[1] No, salir")
+        eleccion = input("Que eliges? ")
+        if eleccion == "0":
+            ElegirWallet()
+        else:
+            exit
+    
+    
 
 #ELIMINAR WALLET
 def EliminarWallet():
@@ -151,7 +201,7 @@ def EliminarWallet():
     else:
         PonerTexto()
         os.remove("wallets/"+walletsLista[walletElegidaNumero])
-        print("Wallet: " + walletsLista[walletElegidaNumero]+" ELIMINADA!!!! :D")
+        print("Wallet: " + walletsLista[walletElegidaNumero].replace(".wallet", "")+" ELIMINADA!!!! :D")
         print("Quieres seguir con el programa?")
         print("[0] Si :D")
         print("[1] No, salir")
@@ -168,30 +218,29 @@ def ObtenerID():
     listaIDs = client.get_accounts()
     cantidadIDs = len(listaIDs.data)
     print(cantidadIDs)
-    try:
-        print("  ______________________________________________________________________________")
-        print(" /_____________________________________________________________________________/")
-        print("/_____________________________________________________________________________/")
-        while cantidadIDs >= 0:
-            
-            walletIDs = listaIDs[cantidadIDs-1]
-            print("|| #"+str(cantidadIDs))
-            print("|| Nombre Wallet: "+walletIDs.name)
-            print("|| Moneda de la Wallet: "+ walletIDs.balance.currency)
-            print("|| ID Wallet: "+ walletIDs.id)
-            print("|| Balance Wallet: "+walletIDs.balance.amount)
-            print("|| Balance Wallet a "+ walletIDs.native_balance.currency + ":"+ walletIDs.native_balance.amount)
-            print("|| Creada en: "+ walletIDs.created_at)
-            print("|| Ultima vez actualizada: "+walletIDs.updated_at)
-            if cantidadIDs == 0:
-                print("||_____________________________________________________________________________")
-                print("| SI NO VES LA WALLET QUE BUSCABAS ASEGURATE DE QUE LA API TENGA ACCESO A ELLA!")
-                print("\______________________________________________________________________________")
-            else:
-                print("||-----------------------------------------------------------------------------")
-            cantidadIDs = cantidadIDs - 1
-    except:
-        pass
+    
+    print("  ______________________________________________________________________________")
+    print(" /_____________________________________________________________________________/")
+    print("/_____________________________________________________________________________/")
+    while cantidadIDs >= 0:
+        
+        walletIDs = listaIDs[cantidadIDs-1]
+        print("|| #"+str(cantidadIDs))
+        print("|| Nombre Wallet: "+walletIDs.name)
+        print("|| Moneda de la Wallet: "+ walletIDs.balance.currency)
+        print("|| ID Wallet: "+ walletIDs.id)
+        print("|| Balance Wallet: "+walletIDs.balance.amount)
+        print("|| Balance Wallet a "+ walletIDs.native_balance.currency + ":"+ walletIDs.native_balance.amount)
+        print("|| Creada en: "+ str(walletIDs.created_at))
+        print("|| Ultima vez actualizada: "+str(walletIDs.updated_at))
+        if cantidadIDs == 0:
+            print("||_____________________________________________________________________________")
+            print("| SI NO VES LA WALLET QUE BUSCABAS ASEGURATE DE QUE LA API TENGA ACCESO A ELLA!")
+            print("\______________________________________________________________________________")
+        else:
+            print("||-----------------------------------------------------------------------------")
+        cantidadIDs = cantidadIDs - 1
+    
         
 #VER VALOR CRIPTOMONEDAS
 def VerValorCriptomonedas():
